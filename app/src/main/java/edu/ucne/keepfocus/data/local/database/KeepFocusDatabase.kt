@@ -9,4 +9,5 @@ import androidx.room.RoomDatabase
     exportSchema = false
 )
 abstract class KeepFocusDatabase: RoomDatabase() {
+
 }
