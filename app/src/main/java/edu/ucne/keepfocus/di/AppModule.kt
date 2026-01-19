@@ -22,4 +22,16 @@ object AppModule {
             "KeepFocusDatabase"
         ).fallbackToDestructiveMigration().build()
     }
+
+    @Provides
+    @Singleton
+    fun providesAppDao(keepFocusDb: KeepFocusDatabase) = keepFocusDb.appDao()
+
+    @Provides
+    @Singleton
+    fun providesFocusZoneDao(keepFocusDb: KeepFocusDatabase) = keepFocusDb.focusZoneDao()
+
+    @Provides
+    @Singleton
+    fun providesDetalleFocusZoneAppDao(keepFocusDb: KeepFocusDatabase) = keepFocusDb.detalleFocusZoneAppDao()
 }
