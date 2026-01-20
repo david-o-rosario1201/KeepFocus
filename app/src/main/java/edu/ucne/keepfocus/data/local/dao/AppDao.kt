@@ -17,7 +17,7 @@ interface AppDao {
         WHERE appId = :appId
         LIMIT 1
     """)
-    suspend fun getAppById(appId: Int): AppEntity?
+    suspend fun getAppById(appId: Int): Flow<AppEntity>?
 
     @Delete
     suspend fun deleteApp(app: AppEntity)
