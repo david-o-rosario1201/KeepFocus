@@ -6,14 +6,14 @@ import edu.ucne.keepfocus.data.local.dao.AppDao
 import edu.ucne.keepfocus.data.local.dao.DetalleFocusZoneAppDao
 import edu.ucne.keepfocus.data.local.dao.FocusZoneDao
 import edu.ucne.keepfocus.data.local.entities.AppEntity
-import edu.ucne.keepfocus.data.local.entities.DetalleFocusZoneApp
+import edu.ucne.keepfocus.data.local.entities.DetalleFocusZoneAppEntity
 import edu.ucne.keepfocus.data.local.entities.FocusZoneEntity
 
 @Database(
     entities = [
         AppEntity::class,
         FocusZoneEntity::class,
-        DetalleFocusZoneApp::class
+        DetalleFocusZoneAppEntity::class
     ],
     version = 1,
     exportSchema = false
