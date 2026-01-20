@@ -3,12 +3,12 @@ package edu.ucne.keepfocus.data.local.dao
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Upsert
-import edu.ucne.keepfocus.data.local.entities.DetalleFocusZoneApp
+import edu.ucne.keepfocus.data.local.entities.DetalleFocusZoneAppEntity
 
 @Dao
 interface DetalleFocusZoneAppDao {
     @Upsert
-    suspend fun upsertDetalle(detalle: DetalleFocusZoneApp)
+    suspend fun upsertDetalle(detalle: DetalleFocusZoneAppEntity)
 
     @Query("""
         DELETE FROM DetalleFocusZoneApp

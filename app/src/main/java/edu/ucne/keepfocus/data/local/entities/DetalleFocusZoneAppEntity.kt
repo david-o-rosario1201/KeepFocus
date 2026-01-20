@@ -26,7 +26,7 @@ import androidx.room.Index
         Index("appId")
     ]
 )
-data class DetalleFocusZoneApp(
+data class DetalleFocusZoneAppEntity(
     val focusZoneId: Int,
     val appId: Int
 )
