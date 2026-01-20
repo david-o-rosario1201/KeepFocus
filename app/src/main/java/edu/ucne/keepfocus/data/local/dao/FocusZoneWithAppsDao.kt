@@ -13,7 +13,7 @@ interface FocusZoneWithAppsDao {
         SELECT * FROM FocusZones
         WHERE focusZoneId = :focusZoneId
     """)
-    suspend fun getFocusZoneWithApps(focusZoneId: Int): FocusZoneWithAppsEntity
+    suspend fun getFocusZoneWithApps(focusZoneId: Int): Flow<FocusZoneWithAppsEntity>?
 
     @Transaction
     @Query("SELECT * FROM FocusZones")
