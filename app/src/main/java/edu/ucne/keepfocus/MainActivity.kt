@@ -18,7 +18,7 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContent {
             KeepFocusTheme {
-               KeepFocusNavHost(navController = rememberNavController())
+               KeepFocusNavHost()
             }
         }
     }
@@ -28,6 +28,6 @@ class MainActivity : AppCompatActivity() {
 @Composable
 fun GreetingPreview() {
     KeepFocusTheme {
-       KeepFocusNavHost(navController = rememberNavController())
+       KeepFocusNavHost()
     }
 }
