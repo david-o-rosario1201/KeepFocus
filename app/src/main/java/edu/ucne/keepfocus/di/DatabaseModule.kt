@@ -10,17 +10,18 @@ import dagger.hilt.components.SingletonComponent
 import edu.ucne.keepfocus.data.local.database.KeepFocusDatabase
 import javax.inject.Singleton
 
-@InstallIn(SingletonComponent::class)
 @Module
-object AppModule {
+@InstallIn(SingletonComponent::class)
+object DatabaseModule {
+
     @Provides
     @Singleton
-    fun providesKeepFocusDatabase(@ApplicationContext appContext: Context): KeepFocusDatabase{
+    fun providesKeepFocusDatabase(@ApplicationContext appContext: Context): KeepFocusDatabase {
         return Room.databaseBuilder(
             appContext,
             KeepFocusDatabase::class.java,
             "KeepFocusDatabase"
-        ).fallbackToDestructiveMigration().build()
+        ).build()
     }
 
     @Provides

@@ -1,11 +1,11 @@
 package edu.ucne.keepfocus.domain.usecases
 
-import edu.ucne.keepfocus.data.repositories.FocusZoneRepositoryImpl
 import edu.ucne.keepfocus.domain.models.FocusZone
+import edu.ucne.keepfocus.domain.repositories.FocusZoneRepository
 import javax.inject.Inject
 
 class CreateFocusZone @Inject constructor(
-    private val repository: FocusZoneRepositoryImpl
+    private val repository: FocusZoneRepository
 ) {
     suspend operator fun invoke(focusZone: FocusZone){
         repository.upsertFocusZone(focusZone)
