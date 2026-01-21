@@ -4,7 +4,7 @@ import edu.ucne.keepfocus.domain.models.FocusZone
 import edu.ucne.keepfocus.domain.repositories.FocusZoneRepository
 import javax.inject.Inject
 
-class CreateFocusZone @Inject constructor(
+class UpsertFocusZone @Inject constructor(
     private val repository: FocusZoneRepository
 ) {
     suspend operator fun invoke(focusZone: FocusZone){
