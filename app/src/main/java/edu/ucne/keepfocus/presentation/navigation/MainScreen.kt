@@ -6,9 +6,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 
 @Composable
-fun MainScaffold(
+fun MainScreen(
     navController: NavHostController
 ){
     Scaffold(
@@ -16,10 +17,12 @@ fun MainScaffold(
     ){ innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = "",
+            startDestination = Screen.HomeScreen.route,
             modifier = Modifier.padding(innerPadding)
         ){
-
+            composable<Screen.HomeScreen>{ }
+            composable<Screen.AddFocusZoneScreen> { }
+            composable<Screen.SettingScreen> { }
         }
     }
 }
