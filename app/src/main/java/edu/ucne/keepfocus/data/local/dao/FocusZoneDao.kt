@@ -17,11 +17,11 @@ interface FocusZoneDao {
         WHERE focusZoneId = :focusZoneId
         LIMIT 1
     """)
-    suspend fun getFocusZoneById(focusZoneId: Int): Flow<FocusZoneEntity>?
+    fun getFocusZoneById(focusZoneId: Int): Flow<FocusZoneEntity>?
 
     @Delete
     suspend fun deleteFocusZone(focusZone: FocusZoneEntity)
 
     @Query("SELECT * FROM FocusZones")
-    suspend fun getFocusZones(): Flow<List<FocusZoneEntity>>
+    fun getFocusZones(): Flow<List<FocusZoneEntity>>
 }
