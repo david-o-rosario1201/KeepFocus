@@ -5,6 +5,6 @@ import edu.ucne.keepfocus.domain.models.FocusZoneWithApps
 import kotlinx.coroutines.flow.Flow
 
 interface FocusZoneWithAppsRepository {
-    suspend fun getFocusZoneWithApps(focusZoneId: Int): Flow<FocusZoneWithApps>?
-    suspend fun getFocusZoneWithApps(): Flow<List<FocusZoneWithApps>>
+    fun getFocusZoneWithApps(focusZoneId: Int): Flow<FocusZoneWithApps>?
+    fun getFocusZoneWithApps(): Flow<List<FocusZoneWithApps>>
 }
