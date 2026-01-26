@@ -11,12 +11,12 @@ import javax.inject.Inject
 class FocusZoneWithAppsRepositoryImpl @Inject constructor(
     private val focusZoneWithAppsDao: FocusZoneWithAppsDao
 ): FocusZoneWithAppsRepository{
-    override suspend fun getFocusZoneWithApps(focusZoneId: Int): Flow<FocusZoneWithApps>? {
+    override fun getFocusZoneWithApps(focusZoneId: Int): Flow<FocusZoneWithApps>? {
         return focusZoneWithAppsDao.getFocusZoneWithApps(focusZoneId)
             ?.map { focusZoneWithApp -> focusZoneWithApp.toDomain() }
     }
 
-    override suspend fun getFocusZoneWithApps(): Flow<List<FocusZoneWithApps>> {
+    override fun getFocusZoneWithApps(): Flow<List<FocusZoneWithApps>> {
         return focusZoneWithAppsDao.getFocusZoneWithApps()
             .map { focusZoneWithApps ->
                 focusZoneWithApps.map { it.toDomain() }
