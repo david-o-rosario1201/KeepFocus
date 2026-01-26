@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface FocusZoneRepository {
     suspend fun upsertFocusZone(focusZone: FocusZone)
-    suspend fun getFocusZoneById(focusZoneId: Int): Flow<FocusZone>?
+    fun getFocusZoneById(focusZoneId: Int): Flow<FocusZone>?
     suspend fun deleteFocusZone(focusZone: FocusZone)
-    suspend fun getFocusZones(): Flow<List<FocusZone>>
+    fun getFocusZones(): Flow<List<FocusZone>>
 }
