@@ -16,7 +16,7 @@ class FocusZoneRepositoryImpl @Inject constructor(
         return focusZoneDao.upsertFocusZone(focusZone.asEntity())
     }
 
-    override suspend fun getFocusZoneById(focusZoneId: Int): Flow<FocusZone>? {
+    override fun getFocusZoneById(focusZoneId: Int): Flow<FocusZone>? {
         return focusZoneDao.getFocusZoneById(focusZoneId)
             ?.map { focusZone -> focusZone.toDomain() }
     }
@@ -25,7 +25,7 @@ class FocusZoneRepositoryImpl @Inject constructor(
         return focusZoneDao.deleteFocusZone(focusZone.asEntity())
     }
 
-    override suspend fun getFocusZones(): Flow<List<FocusZone>> {
+    override fun getFocusZones(): Flow<List<FocusZone>> {
         return focusZoneDao.getFocusZones()
             .map { focusZones ->
                 focusZones.map { it.toDomain() }
