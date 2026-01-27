@@ -16,10 +16,10 @@ class AppRepositoryImpl @Inject constructor(
         return appDao.upsertApp(app.asEntity())
     }
 
-    override fun getAppById(appId: Int): Flow<App>? {
-        return appDao.getAppById(appId)
-            ?.map { app ->
-                app.toDomain()
+    override fun observeAppById(appId: Int): Flow<App?> {
+        return appDao.observeAppById(appId)
+            .map { app ->
+                app?.toDomain()
             }
     }
 
@@ -27,8 +27,8 @@ class AppRepositoryImpl @Inject constructor(
         return appDao.deleteApp(app.asEntity())
     }
 
-    override fun getApps(): Flow<List<App>> {
-        return appDao.getApps()
+    override fun observeApps(): Flow<List<App>> {
+        return appDao.observeApps()
             .map { apps ->
                 apps.map { it.toDomain() }
             }
