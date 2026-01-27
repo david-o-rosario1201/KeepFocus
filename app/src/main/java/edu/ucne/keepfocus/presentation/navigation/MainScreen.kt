@@ -23,7 +23,7 @@ fun MainScreen(){
             composable<Screen.HomeScreen>{
                 HomeScreen()
             }
-            composable<Screen.AddFocusZoneScreen> { }
+            composable<Screen.FocusScreen> { }
             composable<Screen.SettingScreen> { }
         }
     }
