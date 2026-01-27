@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface AppRepository {
     suspend fun upsertApp(app: App)
-    fun getAppById(appId: Int): Flow<App>?
+    fun observeAppById(appId: Int): Flow<App?>
     suspend fun deleteApp(app: App)
-    fun getApps(): Flow<List<App>>
+    fun observeApps(): Flow<List<App>>
 }
