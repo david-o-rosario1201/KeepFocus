@@ -7,6 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import edu.ucne.keepfocus.presentation.focus.FocusScreen
 import edu.ucne.keepfocus.presentation.home.HomeScreen
 
 @Composable
@@ -23,7 +24,9 @@ fun MainScreen(){
             composable<Screen.HomeScreen>{
                 HomeScreen()
             }
-            composable<Screen.AddFocusZoneScreen> { }
+            composable<Screen.FocusScreen> {
+                FocusScreen()
+            }
             composable<Screen.SettingScreen> { }
         }
     }

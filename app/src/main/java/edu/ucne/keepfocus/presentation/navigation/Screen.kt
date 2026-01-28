@@ -10,7 +10,7 @@ sealed class Screen {
     data object HomeScreen: Screen()
 
     @Serializable
-    data object AddFocusZoneScreen: Screen()
+    data object FocusScreen: Screen()
 
     @Serializable
     data object SettingScreen: Screen()
