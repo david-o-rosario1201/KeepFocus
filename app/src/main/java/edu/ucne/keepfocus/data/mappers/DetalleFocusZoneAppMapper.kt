@@ -5,10 +5,10 @@ import edu.ucne.keepfocus.domain.models.DetalleFocusZoneApp
 
 fun DetalleFocusZoneAppEntity.toDomain(): DetalleFocusZoneApp = DetalleFocusZoneApp(
     focusZoneId = focusZoneId,
-    appId = appId
+    packageName = packageName
 )
 
 fun DetalleFocusZoneApp.asEntity(): DetalleFocusZoneAppEntity = DetalleFocusZoneAppEntity(
     focusZoneId = focusZoneId,
-    appId = appId
+    packageName = packageName
 )

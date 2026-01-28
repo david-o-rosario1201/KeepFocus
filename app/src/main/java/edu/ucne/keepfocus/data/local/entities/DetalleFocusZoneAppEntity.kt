@@ -6,7 +6,7 @@ import androidx.room.Index
 
 @Entity(
     tableName = "DetalleFocusZoneApp",
-    primaryKeys = ["focusZoneId", "appId"],
+    primaryKeys = ["focusZoneId", "packageName"],
     foreignKeys = [
         ForeignKey(
             entity = FocusZoneEntity::class,
@@ -16,17 +16,17 @@ import androidx.room.Index
         ),
         ForeignKey(
             entity = AppEntity::class,
-            parentColumns = ["appId"],
-            childColumns = ["appId"],
+            parentColumns = ["packageName"],
+            childColumns = ["packageName"],
             onDelete = ForeignKey.CASCADE
         )
     ],
     indices = [
         Index("focusZoneId"),
-        Index("appId")
+        Index("packageName")
     ]
 )
 data class DetalleFocusZoneAppEntity(
     val focusZoneId: Int,
-    val appId: Int
+    val packageName: String
 )

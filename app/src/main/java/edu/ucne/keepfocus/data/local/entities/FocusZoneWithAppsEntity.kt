@@ -9,7 +9,7 @@ data class FocusZoneWithAppsEntity(
     val focusZone: FocusZoneEntity,
     @Relation(
         parentColumn = "focusZoneId",
-        entityColumn = "appId",
+        entityColumn = "packageName",
         associateBy = Junction(DetalleFocusZoneAppEntity::class)
     )
     val apps: List<AppEntity>
