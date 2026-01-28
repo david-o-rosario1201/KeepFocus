@@ -13,4 +13,7 @@ abstract class SystemModule {
 
     @Binds
     abstract fun bindsAppUsageSystem(impl: AppUsageSystemImpl): AppUsageSystem
+
+//    @Binds
+//    abstract fun bindsInstalledAppsProvider(impl: InstalledAppsProviderImpl): InstalledAppsProvider
 }
