@@ -1,7 +1,8 @@
 package edu.ucne.keepfocus.domain.models
 
 data class App(
-    val appId: Int? = null,
-    val nombre: String = "",
-    val icono: String = ""
+    val packageName: String,
+    val name: String,
+    val isBlocked: Boolean,
+    val dailyLimitMinutes: Int
 )
