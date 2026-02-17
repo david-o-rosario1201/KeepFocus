@@ -99,6 +99,16 @@ class FocusViewModel @Inject constructor(
                     )
                 }
             }
+            is FocusUiEvent.OnNombreChange -> {
+                _uiState.update {
+                    it.copy(nombre = event.nombre)
+                }
+            }
+            is FocusUiEvent.OnTiempoLimiteChange -> {
+                _uiState.update {
+                    it.copy(tiempoLimite = event.tiempoLimite)
+                }
+            }
         }
     }
 }
