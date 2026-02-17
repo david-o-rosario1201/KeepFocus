@@ -6,6 +6,7 @@ import edu.ucne.keepfocus.domain.models.App
 fun AppEntity.toDomain(): App = App(
     packageName = packageName,
     name = name,
+    icon = null,
     isBlocked = isBlocked,
     dailyLimitMinutes = dailyLimitMinutes
 )

@@ -21,6 +21,7 @@ class InstalledAppsProviderImpl @Inject constructor(
                 App(
                     packageName = it.packageName,
                     name = pm.getApplicationLabel(it).toString(),
+                    icon = pm.getApplicationIcon(it),
                     isBlocked = false,
                     dailyLimitMinutes = 0
                 )
