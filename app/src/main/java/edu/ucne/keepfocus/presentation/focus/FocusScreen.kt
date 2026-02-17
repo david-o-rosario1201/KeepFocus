@@ -25,7 +25,6 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -54,10 +53,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -97,11 +92,13 @@ private fun FocusBodyScreen(
                 .padding(innerPadding)
         ){
             AssistedTextField(
-                value = "",
-                onValueChange = {},
+                value = uiState.nombre,
+                onValueChange = { onEvent(FocusUiEvent.OnNombreChange(it)) },
                 onButtonClick = {}
             )
             AssistedDropDown(
+                value = uiState.tiempoLimite,
+                onValueChange = { onEvent(FocusUiEvent.OnTiempoLimiteChange(it)) },
                 onButtonClick = {}
             )
             Spacer(modifier = Modifier.height(25.dp))
@@ -267,8 +264,6 @@ private fun AssistedTextField(
     onValueChange: (String) -> Unit,
     onButtonClick: () -> Unit
 ){
-    val focusRequester = remember { FocusRequester() }
-    val focusManager = LocalFocusManager.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -282,19 +277,11 @@ private fun AssistedTextField(
             onValueChange = onValueChange,
             modifier = Modifier
                 .weight(1f)
-                .clip(RoundedCornerShape(10.dp))
-                .focusRequester(focusRequester),
+                .clip(RoundedCornerShape(10.dp)),
             shape = RoundedCornerShape(10.dp),
             keyboardOptions = KeyboardOptions(
                 autoCorrectEnabled = false,
                 imeAction = ImeAction.Next
-            ),
-            keyboardActions = KeyboardActions(
-                onNext = {
-                    focusManager.moveFocus(
-                        FocusDirection.Next
-                    )
-                }
             ),
             singleLine = true,
             maxLines = 1
@@ -307,9 +294,13 @@ private fun AssistedTextField(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AssistedDropDown(
+    value: Long,
+    onValueChange: (Long) -> Unit,
     onButtonClick: () -> Unit
 ){
     var expanded by remember { mutableStateOf(false) }
+    val options = getTimeOptions()
+    val minutes = value / 60_000L
 
     Row(
         modifier = Modifier
@@ -325,7 +316,12 @@ private fun AssistedDropDown(
         ) {
             OutlinedTextField(
                 label = { Text("Tiempo") },
-                value = "",
+                value = when{
+                    minutes == 1L -> "1 Minuto"
+                    minutes < 60L -> "$minutes Minutos"
+                    minutes == 60L -> "1 Hora"
+                    else -> "${minutes / 60} Horas"
+                },
                 onValueChange = {},
                 modifier = Modifier
                     .fillMaxWidth()
@@ -343,10 +339,15 @@ private fun AssistedDropDown(
                 expanded = expanded,
                 onDismissRequest = { expanded = false}
             ){
-                DropdownMenuItem(
-                    text = { Text("30") },
-                    onClick = { expanded = false}
-                )
+                options.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(option.labelRes) },
+                        onClick = {
+                            onValueChange(option.value)
+                            expanded = false
+                        }
+                    )
+                }
             }
         }
 
