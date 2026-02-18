@@ -5,8 +5,8 @@ data class FocusUiState(
     val icono: String = "",
     val tiempoLimite: Long = 0,
     val installedApps: List<AppUi> = emptyList(),
-    val showAppPickerModal: Boolean = false,
-    val selectedApps: List<AppUi> = emptyList()
+    val selectedApps: List<AppUi> = emptyList(),
+    val overlay: FocusOverlay = FocusOverlay.None
 ){
     val isEmpty: Boolean get() = selectedApps.isEmpty()
 }
