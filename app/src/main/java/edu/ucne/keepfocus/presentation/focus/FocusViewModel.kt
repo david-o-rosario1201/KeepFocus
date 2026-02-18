@@ -53,14 +53,14 @@ class FocusViewModel @Inject constructor(
 
     fun onEvent(event: FocusUiEvent){
         when(event){
-            FocusUiEvent.OnOpenModal -> {
+            FocusUiEvent.OnDismissOverlay -> {
                 _uiState.update {
-                    it.copy(showAppPickerModal = true)
+                    it.copy(overlay = FocusOverlay.None)
                 }
             }
-            FocusUiEvent.OnCloseModal -> {
+            is FocusUiEvent.OnShowOverlay -> {
                 _uiState.update {
-                    it.copy(showAppPickerModal = false)
+                    it.copy(overlay = event.overlay)
                 }
             }
             is FocusUiEvent.OnSelectedApp -> {
@@ -79,7 +79,7 @@ class FocusViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         selectedApps = event.apps,
-                        showAppPickerModal = false
+                        overlay = FocusOverlay.None
                     )
                 }
             }
