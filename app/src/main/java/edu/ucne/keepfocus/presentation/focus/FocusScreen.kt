@@ -70,6 +70,7 @@ fun FocusScreen(
     viewModel: FocusViewModel = hiltViewModel()
 ){
     val uiState by viewModel.uiState.collectAsState()
+
     FocusBodyScreen(
         uiState = uiState,
         onEvent = viewModel::onEvent
@@ -94,16 +95,16 @@ private fun FocusBodyScreen(
             AssistedTextField(
                 value = uiState.nombre,
                 onValueChange = { onEvent(FocusUiEvent.OnNombreChange(it)) },
-                onButtonClick = {}
+                onButtonClick = { onEvent(FocusUiEvent.OnShowOverlay(FocusOverlay.HelpFocusName)) }
             )
             AssistedDropDown(
                 value = uiState.tiempoLimite,
                 onValueChange = { onEvent(FocusUiEvent.OnTiempoLimiteChange(it)) },
-                onButtonClick = {}
+                onButtonClick = { onEvent(FocusUiEvent.OnShowOverlay(FocusOverlay.HelpTimeLimit)) }
             )
             Spacer(modifier = Modifier.height(25.dp))
             Button(
-                onClick = { onEvent(FocusUiEvent.OnOpenModal) },
+                onClick = { onEvent(FocusUiEvent.OnShowOverlay(FocusOverlay.AppPicker)) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(54.dp)
@@ -121,12 +122,29 @@ private fun FocusBodyScreen(
                 )
             }
 
-            if(uiState.showAppPickerModal){
-                AppModalPicker(
-                    apps = apps,
-                    onEvent = onEvent,
-                    onDismiss = { onEvent(FocusUiEvent.OnCloseModal) }
-                )
+            when(uiState.overlay){
+                FocusOverlay.AppPicker -> {
+                    AppModalPicker(
+                        apps = apps,
+                        onEvent = onEvent,
+                        onDismiss = { onEvent(FocusUiEvent.OnDismissOverlay) }
+                    )
+                }
+                FocusOverlay.HelpFocusName -> {
+                    HelpModal(
+                        title = "¿Qué es un Focus?",
+                        description = "Un Focus es un grupo de aplicaciones al que le asignas un tiempo máximo de uso diario.",
+                        onDismiss = { onEvent(FocusUiEvent.OnDismissOverlay)}
+                    )
+                }
+                FocusOverlay.HelpTimeLimit -> {
+                    HelpModal(
+                        title = "¿Qué pasa con el tiempo?",
+                        description = "Cuando el tiempo se agota, KeepFocus te avisa para ayudarte a volver al enfoque.",
+                        onDismiss = { onEvent(FocusUiEvent.OnDismissOverlay)}
+                    )
+                }
+                FocusOverlay.None -> Unit
             }
 
             if(uiState.isEmpty){
