@@ -109,6 +109,11 @@ class FocusViewModel @Inject constructor(
                     it.copy(tiempoLimite = event.tiempoLimite)
                 }
             }
+            is FocusUiEvent.OnIconoChange -> {
+                _uiState.update {
+                    it.copy(icono = event.icono)
+                }
+            }
         }
     }
 }

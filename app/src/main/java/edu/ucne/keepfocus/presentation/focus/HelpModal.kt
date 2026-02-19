@@ -59,7 +59,7 @@ fun HelpModal(
                     onClick = onDismiss
                 ) {
                     Text(
-                        text = "Entenido",
+                        text = "Entendido",
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp
                     )
