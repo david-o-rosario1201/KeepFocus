@@ -2,6 +2,7 @@
 
 package edu.ucne.keepfocus.presentation.focus
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -53,6 +55,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -64,6 +68,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import edu.ucne.keepfocus.R
 import edu.ucne.keepfocus.presentation.component.TopAppBarComponent
+import edu.ucne.keepfocus.ui.theme.FocusPrimary
 
 @Composable
 fun FocusScreen(
@@ -87,74 +92,152 @@ private fun FocusBodyScreen(
     Scaffold(
         topBar = { TopAppBarComponent(title = "Registrar un Nuevo Focus", subtitle = "") }
     ){ innerPadding ->
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ){
-            AssistedTextField(
-                value = uiState.nombre,
-                onValueChange = { onEvent(FocusUiEvent.OnNombreChange(it)) },
-                onButtonClick = { onEvent(FocusUiEvent.OnShowOverlay(FocusOverlay.HelpFocusName)) }
-            )
-            AssistedDropDown(
-                value = uiState.tiempoLimite,
-                onValueChange = { onEvent(FocusUiEvent.OnTiempoLimiteChange(it)) },
-                onButtonClick = { onEvent(FocusUiEvent.OnShowOverlay(FocusOverlay.HelpTimeLimit)) }
-            )
-            Spacer(modifier = Modifier.height(25.dp))
-            Button(
-                onClick = { onEvent(FocusUiEvent.OnShowOverlay(FocusOverlay.AppPicker)) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(54.dp)
-                    .padding(horizontal = 40.dp, vertical = 2.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.secondary,
-                    contentColor = MaterialTheme.colorScheme.onSecondary
-                ),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text(
-                    text = "Elige tus apps",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
+            item{
+                Header(
+                    uiState = uiState,
+                    onEvent = { onEvent(FocusUiEvent.OnShowOverlay(FocusOverlay.IconPicker)) }
                 )
             }
-
-            when(uiState.overlay){
-                FocusOverlay.AppPicker -> {
-                    AppModalPicker(
-                        apps = apps,
-                        onEvent = onEvent,
-                        onDismiss = { onEvent(FocusUiEvent.OnDismissOverlay) }
-                    )
-                }
-                FocusOverlay.HelpFocusName -> {
-                    HelpModal(
-                        title = "¿Qué es un Focus?",
-                        description = "Un Focus es un grupo de aplicaciones al que le asignas un tiempo máximo de uso diario.",
-                        onDismiss = { onEvent(FocusUiEvent.OnDismissOverlay)}
-                    )
-                }
-                FocusOverlay.HelpTimeLimit -> {
-                    HelpModal(
-                        title = "¿Qué pasa con el tiempo?",
-                        description = "Cuando el tiempo se agota, KeepFocus te avisa para ayudarte a volver al enfoque.",
-                        onDismiss = { onEvent(FocusUiEvent.OnDismissOverlay)}
-                    )
-                }
-                FocusOverlay.None -> Unit
+            item {
+                AssistedTextField(
+                    value = uiState.nombre,
+                    onValueChange = { onEvent(FocusUiEvent.OnNombreChange(it)) },
+                    onButtonClick = { onEvent(FocusUiEvent.OnShowOverlay(FocusOverlay.HelpFocusName)) }
+                )
+            }
+            item {
+                AssistedDropDown(
+                    value = uiState.tiempoLimite,
+                    onValueChange = { onEvent(FocusUiEvent.OnTiempoLimiteChange(it)) },
+                    onButtonClick = { onEvent(FocusUiEvent.OnShowOverlay(FocusOverlay.HelpTimeLimit)) }
+                )
+            }
+            item { Spacer(modifier = Modifier.height(25.dp)) }
+            item{
+                AppButton { onEvent(FocusUiEvent.OnShowOverlay(FocusOverlay.AppPicker)) }
             }
 
             if(uiState.isEmpty){
-                EmptyAppsList()
+                item { EmptyAppsList() }
             } else{
-                SelectedAppsList(
-                    apps = uiState.selectedApps,
-                    onEvent = onEvent
+                item {
+                    SelectedAppsList(
+                        apps = uiState.selectedApps,
+                        onEvent = onEvent
+                    )
+                }
+            }
+        }
+
+        when(uiState.overlay){
+            FocusOverlay.AppPicker -> {
+                AppModalPicker(
+                    apps = apps,
+                    onEvent = onEvent,
+                    onDismiss = { onEvent(FocusUiEvent.OnDismissOverlay) }
                 )
             }
+            FocusOverlay.HelpFocusName -> {
+                HelpModal(
+                    title = "¿Qué es un Focus?",
+                    description = "Un Focus es un grupo de aplicaciones al que le asignas un tiempo máximo de uso diario.",
+                    onDismiss = { onEvent(FocusUiEvent.OnDismissOverlay)}
+                )
+            }
+            FocusOverlay.HelpTimeLimit -> {
+                HelpModal(
+                    title = "¿Qué pasa con el tiempo?",
+                    description = "Cuando el tiempo se agota, KeepFocus te avisa para ayudarte a volver al enfoque.",
+                    onDismiss = { onEvent(FocusUiEvent.OnDismissOverlay)}
+                )
+            }
+            FocusOverlay.IconPicker -> {
+                IconPickerModal(
+                    selectedIcono = uiState.icono,
+                    onEvent = {
+                        onEvent(FocusUiEvent.OnIconoChange(it))
+                    },
+                    onDismiss = { onEvent(FocusUiEvent.OnDismissOverlay)}
+                )
+            }
+            FocusOverlay.None -> Unit
+        }
+    }
+}
+
+@Composable
+private fun AppButton(onEvent: () -> Unit){
+    Button(
+        onClick = onEvent,
+        border = BorderStroke(2.dp, FocusPrimary),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(48.dp)
+            .padding(horizontal = 60.dp),
+        colors = ButtonDefaults.outlinedButtonColors(
+            contentColor = FocusPrimary
+        ),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Text(
+            text = "Elige tus apps",
+            fontWeight = FontWeight.Bold,
+            fontSize = 18.sp
+        )
+    }
+}
+
+@Composable
+private fun Header(
+    uiState: FocusUiState,
+    onEvent: () -> Unit
+){
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 15.dp, start = 20.dp, end = 20.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ){
+        Box(
+            modifier = Modifier
+                .size(80.dp)
+                .clip(CircleShape)
+                .background(Color.LightGray)
+                .border(
+                    width = 2.dp,
+                    color = Color.White,
+                    shape = CircleShape
+                ),
+            contentAlignment = Alignment.Center
+        ){
+            Image(
+                painter = painterResource(id = uiState.icono),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxSize(0.75f)
+            )
+        }
+        Spacer(modifier = Modifier.weight(2f))
+        Button(
+            onClick = onEvent,
+            modifier = Modifier.height(40.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                contentColor = MaterialTheme.colorScheme.primary
+            ),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Text(
+                text = "Elige un icono",
+                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp
+            )
         }
     }
 }
@@ -210,6 +293,7 @@ private fun SelectedAppsList(
                 .padding(20.dp)
         ){
             LazyColumn(
+                modifier = Modifier.heightIn(max = 200.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ){
                 items(
@@ -242,13 +326,33 @@ private fun SelectedAppsList(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
-                                contentDescription = "Eliminar app de la lista"
+                                contentDescription = "Eliminar app de la lista",
+                                tint = MaterialTheme.colorScheme.error
                             )
                         }
                     }
                 }
             }
         }
+        Button(
+            onClick = { },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(54.dp)
+                .padding(horizontal = 40.dp, vertical = 2.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Text(
+                text = "Guardar",
+                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp
+            )
+        }
+        Spacer(modifier = Modifier.height(30.dp))
     }
 }
 
