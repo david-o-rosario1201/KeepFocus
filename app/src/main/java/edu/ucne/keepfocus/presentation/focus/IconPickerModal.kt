@@ -63,6 +63,7 @@ fun IconPickerModal(
     val items = getIconDetail()
     var selected by remember { mutableIntStateOf(selectedIcono) }
 
+    //Probando por qué no llegó el commit
     Dialog(onDismissRequest = {}) {
         Card(
             shape = RoundedCornerShape(12.dp),
