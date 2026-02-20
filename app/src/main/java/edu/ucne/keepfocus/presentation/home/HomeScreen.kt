@@ -11,10 +11,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -23,25 +27,47 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import edu.ucne.keepfocus.R
 import edu.ucne.keepfocus.presentation.component.TopAppBarComponent
 
 @Composable
 fun HomeScreen(
+    navController: NavController,
     viewModel: HomeViewModel = hiltViewModel()
 ){
     val uiState by viewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    val message = navController
+        .currentBackStackEntry
+        ?.savedStateHandle
+        ?.get<String>("snackbar_message")
+
+    LaunchedEffect(message){
+        message?.let {
+            snackbarHostState.showSnackbar(it)
+
+            navController.currentBackStackEntry
+                ?.savedStateHandle
+                ?.remove<String>("snackbar_message")
+        }
+    }
+
     HomeBodyScreen(
-        uiState = uiState
+        uiState = uiState,
+        snackbarHostState = snackbarHostState
     )
 }
 
 @Composable
 private fun HomeBodyScreen(
-    uiState: HomeUiState
+    uiState: HomeUiState,
+    snackbarHostState: SnackbarHostState
 ){
     Scaffold(
-        topBar = { TopAppBarComponent() }
+        topBar = { TopAppBarComponent() },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ){ innerPadding ->
         Column(
             modifier = Modifier.padding(innerPadding)
