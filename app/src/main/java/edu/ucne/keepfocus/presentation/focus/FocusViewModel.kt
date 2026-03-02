@@ -6,9 +6,13 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import edu.ucne.keepfocus.domain.models.FocusZone
 import edu.ucne.keepfocus.domain.system.AppIconProvider
 import edu.ucne.keepfocus.domain.usecases.GetInstalledAppsUseCase
+import edu.ucne.keepfocus.domain.usecases.UpsertFocusZone
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -16,11 +20,15 @@ import javax.inject.Inject
 
 @HiltViewModel
 class FocusViewModel @Inject constructor(
+    private val appIconProvider: AppIconProvider,
     private val getInstalledAppsUseCase: GetInstalledAppsUseCase,
-    private val appIconProvider: AppIconProvider
+    private val upsertFocusZone: UpsertFocusZone
 ): ViewModel(){
     private val _uiState = MutableStateFlow(FocusUiState())
     val uiState = _uiState.asStateFlow()
+
+    private val _uiEffect = MutableSharedFlow<FocusUiEffect>()
+    val uiEffect = _uiEffect.asSharedFlow()
 
     init {
         getInstalledApps()
@@ -51,11 +59,33 @@ class FocusViewModel @Inject constructor(
 
     private fun getIcon(packageName: String) = appIconProvider.getIcon(packageName)
 
+    private fun sendEffect(effect: FocusUiEffect){
+        viewModelScope.launch {
+            _uiEffect.emit(effect)
+        }
+    }
+
     fun onEvent(event: FocusUiEvent){
         when(event){
             FocusUiEvent.OnDismissOverlay -> {
                 _uiState.update {
                     it.copy(overlay = FocusOverlay.None)
+                }
+            }
+            FocusUiEvent.Save -> {
+                viewModelScope.launch {
+                    val state = _uiState.value
+                    val focusZone = FocusZone(
+                        nombre = state.nombre,
+                        icono = state.icono,
+                        tiempoLimite = state.tiempoLimite,
+                    )
+                    try {
+                        upsertFocusZone(focusZone)
+                        sendEffect(FocusUiEffect.NavigateBackWithMessage("Focus guardado con éxito"))
+                    } catch (e: Exception){
+                        _uiEffect.emit(FocusUiEffect.ShowSnackbar("Error al guardar el Focus Zone"))
+                    }
                 }
             }
             is FocusUiEvent.OnShowOverlay -> {
@@ -75,14 +105,6 @@ class FocusViewModel @Inject constructor(
                     state.copy(installedApps = updatedApps)
                 }
             }
-            is FocusUiEvent.OnAddSelectedApps -> {
-                _uiState.update {
-                    it.copy(
-                        selectedApps = event.apps,
-                        overlay = FocusOverlay.None
-                    )
-                }
-            }
             is FocusUiEvent.OnDeleteSelectedApp -> {
                 _uiState.update { state ->
                     val apps = state.installedApps.map { app ->
@@ -92,11 +114,7 @@ class FocusViewModel @Inject constructor(
                             app
                         }
                     }
-                    val selectedApps = apps.filter { app -> app.isSelected }
-                    state.copy(
-                        installedApps = apps,
-                        selectedApps = selectedApps
-                    )
+                    state.copy(installedApps = apps)
                 }
             }
             is FocusUiEvent.OnNombreChange -> {
