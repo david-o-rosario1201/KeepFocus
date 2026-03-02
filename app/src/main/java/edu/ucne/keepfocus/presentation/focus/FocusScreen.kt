@@ -45,8 +45,10 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -66,15 +68,33 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import edu.ucne.keepfocus.R
 import edu.ucne.keepfocus.presentation.component.TopAppBarComponent
 import edu.ucne.keepfocus.ui.theme.FocusPrimary
 
 @Composable
 fun FocusScreen(
+    navController: NavController,
+    snackbarHostState: SnackbarHostState,
     viewModel: FocusViewModel = hiltViewModel()
 ){
     val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(Unit){
+        viewModel.uiEffect.collect{ effect ->
+            when(effect){
+                is FocusUiEffect.NavigateBackWithMessage -> {
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("snackbar_message", effect.message)
+
+                    navController.popBackStack()
+                }
+                is FocusUiEffect.ShowSnackbar -> { snackbarHostState.showSnackbar(effect.message) }
+            }
+        }
+    }
 
     FocusBodyScreen(
         uiState = uiState,
@@ -127,6 +147,7 @@ private fun FocusBodyScreen(
             } else{
                 item {
                     SelectedAppsList(
+                        isCompleted = uiState.isCompleted,
                         apps = uiState.selectedApps,
                         onEvent = onEvent
                     )
@@ -268,6 +289,7 @@ private fun EmptyAppsList(){
 
 @Composable
 private fun SelectedAppsList(
+    isCompleted: Boolean,
     apps: List<AppUi>,
     onEvent: (FocusUiEvent) -> Unit
 ){
@@ -335,7 +357,7 @@ private fun SelectedAppsList(
             }
         }
         Button(
-            onClick = { },
+            onClick = { onEvent(FocusUiEvent.Save) },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(54.dp)
@@ -344,7 +366,8 @@ private fun SelectedAppsList(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
             ),
-            shape = RoundedCornerShape(12.dp)
+            shape = RoundedCornerShape(12.dp),
+            enabled = isCompleted
         ) {
             Text(
                 text = "Guardar",
@@ -526,9 +549,7 @@ private fun AppModalPicker(
                 }
                 Spacer(modifier = Modifier.height(20.dp))
                 Button(
-                    onClick = { onEvent(FocusUiEvent.OnAddSelectedApps(
-                        apps.filter { it.isSelected }
-                    )) },
+                    onClick = { onEvent(FocusUiEvent.OnDismissOverlay) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(54.dp)
@@ -537,7 +558,8 @@ private fun AppModalPicker(
                         containerColor = MaterialTheme.colorScheme.secondary,
                         contentColor = MaterialTheme.colorScheme.onSecondary
                     ),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    enabled = apps.any { it.isSelected }
                 ) {
                     Text(
                         text = "Continuar",
