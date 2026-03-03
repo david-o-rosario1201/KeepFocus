@@ -2,6 +2,7 @@
 
 package edu.ucne.keepfocus.presentation.focus
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -43,10 +44,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -77,11 +81,24 @@ import edu.ucne.keepfocus.ui.theme.FocusPrimary
 fun FocusScreen(
     navController: NavController,
     snackbarHostState: SnackbarHostState,
+    onAllowNavigation: () -> Unit,
+    registerNavigationAttempt: ((() -> Unit)) -> Unit,
     viewModel: FocusViewModel = hiltViewModel()
 ){
     val uiState by viewModel.uiState.collectAsState()
+    var isBackNavigation by remember { mutableStateOf(false) }
+
+    BackHandler{
+        isBackNavigation = true
+        viewModel.onEvent(FocusUiEvent.OnNavigationAttempt)
+    }
 
     LaunchedEffect(Unit){
+
+        registerNavigationAttempt{
+            viewModel.onEvent(FocusUiEvent.OnNavigationAttempt)
+        }
+
         viewModel.uiEffect.collect{ effect ->
             when(effect){
                 is FocusUiEffect.NavigateBackWithMessage -> {
@@ -92,6 +109,14 @@ fun FocusScreen(
                     navController.popBackStack()
                 }
                 is FocusUiEffect.ShowSnackbar -> { snackbarHostState.showSnackbar(effect.message) }
+                FocusUiEffect.AllowNavigation -> {
+                    if(isBackNavigation){
+                        isBackNavigation = false
+                        navController.popBackStack()
+                    } else{
+                        onAllowNavigation()
+                    }
+                }
             }
         }
     }
@@ -186,7 +211,78 @@ private fun FocusBodyScreen(
                     onDismiss = { onEvent(FocusUiEvent.OnDismissOverlay)}
                 )
             }
+            FocusOverlay.ExitModal -> {
+                ExitBottomSheet(
+                    onConfirmExit = {
+                        onEvent(FocusUiEvent.OnConfirmExit)
+                    },
+                    onDismiss = {
+                        onEvent(FocusUiEvent.OnDismissOverlay)
+                    }
+                )
+            }
             FocusOverlay.None -> Unit
+        }
+    }
+}
+
+@Composable
+private fun ExitBottomSheet(
+    onConfirmExit: () -> Unit,
+    onDismiss: () -> Unit
+){
+
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+    ) {
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp)
+        ) {
+
+            Text(
+                text = "Campos sin Guardar",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "¿Estás seguro de que quieres salir sin guardar?",
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+
+                TextButton(
+                    modifier = Modifier.weight(1f),
+                    onClick = onConfirmExit
+                ) {
+                    Text("Salir")
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Button(
+                    modifier = Modifier.weight(1f),
+                    onClick = onDismiss
+                ) {
+                    Text("Continuar")
+                }
+            }
         }
     }
 }
