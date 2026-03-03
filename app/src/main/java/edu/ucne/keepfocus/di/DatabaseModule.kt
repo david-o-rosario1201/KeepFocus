@@ -35,4 +35,8 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun providesDetalleFocusZoneAppDao(keepFocusDb: KeepFocusDatabase) = keepFocusDb.detalleFocusZoneAppDao()
+
+    @Provides
+    @Singleton
+    fun providesFocusZoneTransactionDao(keepFocusDb: KeepFocusDatabase) = keepFocusDb.focusZoneTransactionDao()
 }
