@@ -6,5 +6,5 @@ sealed interface FocusOverlay {
     data object HelpFocusName: FocusOverlay
     data object HelpTimeLimit: FocusOverlay
     data object IconPicker: FocusOverlay
-    data object ExitModal: FocusOverlay
+    data object Exit: FocusOverlay
 }
