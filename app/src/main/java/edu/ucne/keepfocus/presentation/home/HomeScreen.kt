@@ -1,70 +1,111 @@
 package edu.ucne.keepfocus.presentation.home
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import edu.ucne.keepfocus.R
+import edu.ucne.keepfocus.presentation.component.TopAppBarComponent
 
 @Composable
 fun HomeScreen(
-
+    navController: NavController,
+    snackbarHostState: SnackbarHostState,
+    viewModel: HomeViewModel = hiltViewModel()
 ){
-    HomeBodyScreen()
+    val uiState by viewModel.uiState.collectAsState()
+
+    val message = navController
+        .currentBackStackEntry
+        ?.savedStateHandle
+        ?.get<String>("snackbar_message")
+
+    LaunchedEffect(message){
+        message?.let {
+            snackbarHostState.showSnackbar(it)
+
+            navController.currentBackStackEntry
+                ?.savedStateHandle
+                ?.remove<String>("snackbar_message")
+        }
+    }
+
+    HomeBodyScreen(
+        uiState = uiState,
+        snackbarHostState = snackbarHostState
+    )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HomeBodyScreen(
-
+    uiState: HomeUiState,
+    snackbarHostState: SnackbarHostState
 ){
     Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Column {
-                        Text(
-                            text = "!Hola, Juan Pérez",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp,
-                            color = MaterialTheme.colorScheme.onPrimary
-                        )
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Text(
-                            text = "Controla tu tiempo en pantalla.",
-                            fontWeight = FontWeight.Normal,
-                            fontSize = 15.sp,
-                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f)
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary
-                ),
-                modifier = Modifier.shadow(
-                    elevation = 8.dp,
-                    shape = RoundedCornerShape(bottomStart = 30.dp, bottomEnd = 30.dp)
-                )
-            )
-        }
+        topBar = { TopAppBarComponent() },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ){ innerPadding ->
         Column(
             modifier = Modifier.padding(innerPadding)
         ){
-            Text("HelloWorld")
+            when{
+                uiState.isEmpty -> EmptyFocusZoneView()
+                else -> FocusZoneList()
+            }
         }
     }
+}
+
+@Composable
+private fun EmptyFocusZoneView(){
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ){
+        Image(
+            painter = painterResource(id = R.drawable.cajavacia),
+            contentDescription = "Empty List",
+            modifier = Modifier.size(100.dp)
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+        Text(
+            text = "Aún no tienes zonas de enfoque, crea una para empezar a controlar tu tiempo en pantalla.",
+            fontWeight = FontWeight.Normal,
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+            textAlign = TextAlign.Center,
+            modifier = Modifier.width(300.dp)
+        )
+    }
+}
+
+@Composable
+private fun FocusZoneList(
+
+){
+
 }

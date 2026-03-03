@@ -14,14 +14,14 @@ interface AppDao {
 
     @Query("""
         SELECT * FROM Apps
-        WHERE appId = :appId
+        WHERE packageName = :packageName
         LIMIT 1
     """)
-    suspend fun getAppById(appId: Int): Flow<AppEntity>?
+    fun observeAppById(packageName: String): Flow<AppEntity?>
 
     @Delete
     suspend fun deleteApp(app: AppEntity)
 
     @Query("SELECT * FROM Apps")
-    suspend fun getApps(): Flow<List<AppEntity>>
+    fun observeApps(): Flow<List<AppEntity>>
 }

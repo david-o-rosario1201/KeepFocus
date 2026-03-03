@@ -27,7 +27,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 
 @Composable
 fun BottomNavBar(
-    navController: NavHostController
+    navController: NavHostController,
+    onNavigateRequest: (String) -> Unit
 ){
     val items = getBottomNavItems()
 
@@ -47,16 +48,7 @@ fun BottomNavBar(
 
             NavigationBarItem(
                 selected = isSelected,
-                onClick = {
-                    navController.navigate(item.screen.route){
-                        launchSingleTop = true
-                        restoreState = true
-
-                        if(item.screen is Screen.HomeScreen){
-                            popUpTo(Screen.HomeScreen.route){ inclusive = true}
-                        }
-                    }
-                },
+                onClick = { onNavigateRequest(item.screen.route) },
                 icon = {
                     Icon(
                         imageVector = if(isSelected) item.selectedIcon else item.unselectedIcon,
@@ -110,7 +102,7 @@ private fun getBottomNavItems(): List<BottomNavItem>{
             title = "New Focus Zone",
             selectedIcon = Icons.Filled.Add,
             unselectedIcon = Icons.Outlined.Add,
-            screen = Screen.AddFocusZoneScreen
+            screen = Screen.FocusScreen
         ),
         BottomNavItem(
             title = "Settings",

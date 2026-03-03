@@ -8,6 +8,6 @@ data class FocusZoneEntity(
     @PrimaryKey(autoGenerate = true)
     val focusZoneId: Int?,
     val nombre: String,
-    val icono: String,
+    val icono: Int,
     val tiempoLimite: Long
 )

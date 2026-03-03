@@ -7,13 +7,13 @@ import androidx.navigation.compose.rememberNavController
 
 @Composable
 fun KeepFocusNavHost(){
-    val navController = rememberNavController()
+    val rootNavController = rememberNavController()
     NavHost(
-        navController = navController,
+        navController = rootNavController,
         startDestination = Screen.MainScreen.route
     ) {
         composable<Screen.MainScreen>{
-            MainScreen(navController = navController)
+            MainScreen()
         }
     }
 }

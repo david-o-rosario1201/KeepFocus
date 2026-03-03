@@ -4,7 +4,9 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import edu.ucne.keepfocus.data.repositories.AppRepositoryImpl
 import edu.ucne.keepfocus.data.repositories.FocusZoneRepositoryImpl
+import edu.ucne.keepfocus.domain.usecases.GetInstalledAppsUseCase
 import edu.ucne.keepfocus.domain.usecases.UpsertFocusZone
 
 @Module
@@ -12,7 +14,12 @@ import edu.ucne.keepfocus.domain.usecases.UpsertFocusZone
 object UseCaseModule {
 
     @Provides
-    fun provideCreateFocusZone(
+    fun providesCreateFocusZone(
         repositoryImpl: FocusZoneRepositoryImpl
     ) = UpsertFocusZone(repositoryImpl)
+
+    @Provides
+    fun providesGetInstalledApps(
+        repositoryImpl: AppRepositoryImpl
+    ) = GetInstalledAppsUseCase(repositoryImpl)
 }
