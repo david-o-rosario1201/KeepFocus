@@ -1,4 +1,6 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class,
+    ExperimentalMaterial3Api::class
+)
 
 package edu.ucne.keepfocus.presentation.focus
 
@@ -211,7 +213,7 @@ private fun FocusBodyScreen(
                     onDismiss = { onEvent(FocusUiEvent.OnDismissOverlay)}
                 )
             }
-            FocusOverlay.ExitModal -> {
+            FocusOverlay.Exit -> {
                 ExitBottomSheet(
                     onConfirmExit = {
                         onEvent(FocusUiEvent.OnConfirmExit)
@@ -245,20 +247,22 @@ private fun ExitBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(24.dp)
+                .padding(horizontal = 24.dp, vertical = 10.dp)
         ) {
 
             Text(
                 text = "Campos sin Guardar",
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
                 text = "¿Estás seguro de que quieres salir sin guardar?",
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center
             )
 
             Spacer(modifier = Modifier.height(24.dp))

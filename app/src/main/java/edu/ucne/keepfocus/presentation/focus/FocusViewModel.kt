@@ -92,7 +92,7 @@ class FocusViewModel @Inject constructor(
                 viewModelScope.launch {
                     if(_uiState.value.hasUnSavedChanges){
                         _uiState.update {
-                            it.copy(overlay = FocusOverlay.ExitModal)
+                            it.copy(overlay = FocusOverlay.Exit)
                         }
                     } else{
                         _uiEffect.emit(FocusUiEffect.AllowNavigation)
