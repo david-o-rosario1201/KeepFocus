@@ -23,7 +23,7 @@ import androidx.room.Index
     ],
     indices = [
         Index("focusZoneId"),
-        Index("packageName")
+        Index(value = ["packageName"], unique = true)
     ]
 )
 data class DetalleFocusZoneAppEntity(
