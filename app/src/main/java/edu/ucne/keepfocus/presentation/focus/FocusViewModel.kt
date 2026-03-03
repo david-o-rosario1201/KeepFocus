@@ -88,6 +88,25 @@ class FocusViewModel @Inject constructor(
                     }
                 }
             }
+            FocusUiEvent.OnNavigationAttempt -> {
+                viewModelScope.launch {
+                    if(_uiState.value.hasUnSavedChanges){
+                        _uiState.update {
+                            it.copy(overlay = FocusOverlay.ExitModal)
+                        }
+                    } else{
+                        _uiEffect.emit(FocusUiEffect.AllowNavigation)
+                    }
+                }
+            }
+            FocusUiEvent.OnConfirmExit -> {
+                viewModelScope.launch {
+                    _uiState.update {
+                        it.copy(overlay = FocusOverlay.None)
+                    }
+                    _uiEffect.emit(FocusUiEffect.AllowNavigation)
+                }
+            }
             is FocusUiEvent.OnShowOverlay -> {
                 _uiState.update {
                     it.copy(overlay = event.overlay)
