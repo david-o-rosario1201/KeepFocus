@@ -1,5 +1,6 @@
 package edu.ucne.keepfocus.domain.repositories
 
+import edu.ucne.keepfocus.domain.models.App
 import edu.ucne.keepfocus.domain.models.FocusZone
 import edu.ucne.keepfocus.domain.models.FocusZoneWithApps
 import kotlinx.coroutines.flow.Flow
@@ -11,4 +12,5 @@ interface FocusZoneRepository {
     fun observeFocusZones(): Flow<List<FocusZone>>
     fun observeFocusZoneWithApps(focusZoneId: Int): Flow<FocusZoneWithApps?>
     fun observeFocusZonesWithApps(): Flow<List<FocusZoneWithApps>>
+    suspend fun createFocusZone(focusZone: FocusZone, apps: List<App>)
 }
