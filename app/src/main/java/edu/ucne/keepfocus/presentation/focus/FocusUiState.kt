@@ -12,6 +12,10 @@ data class FocusUiState(
 ){
     val selectedApps: List<AppUi> get() = installedApps.filter { it.isSelected }
     val isEmpty: Boolean get() = selectedApps.isEmpty()
-    val isCompleted: Boolean get() = nombre.isNotEmpty() && icono != R.drawable.ic_launcher_foreground
-            && tiempoLimite != 0L && selectedApps.isNotEmpty()
+    val isCompleted: Boolean
+        get() = nombre.isNotEmpty() && icono != R.drawable.ic_launcher_foreground
+                && tiempoLimite != 0L && selectedApps.isNotEmpty()
+    val hasUnSavedChanges
+        get() = nombre.isNotEmpty() || icono != R.drawable.ic_launcher_foreground
+                || tiempoLimite != 0L || selectedApps.isNotEmpty()
 }
