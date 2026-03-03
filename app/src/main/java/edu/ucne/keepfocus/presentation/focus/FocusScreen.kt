@@ -2,6 +2,7 @@
 
 package edu.ucne.keepfocus.presentation.focus
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -43,10 +44,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -66,15 +72,54 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import edu.ucne.keepfocus.R
 import edu.ucne.keepfocus.presentation.component.TopAppBarComponent
 import edu.ucne.keepfocus.ui.theme.FocusPrimary
 
 @Composable
 fun FocusScreen(
+    navController: NavController,
+    snackbarHostState: SnackbarHostState,
+    onAllowNavigation: () -> Unit,
+    registerNavigationAttempt: ((() -> Unit)) -> Unit,
     viewModel: FocusViewModel = hiltViewModel()
 ){
     val uiState by viewModel.uiState.collectAsState()
+    var isBackNavigation by remember { mutableStateOf(false) }
+
+    BackHandler{
+        isBackNavigation = true
+        viewModel.onEvent(FocusUiEvent.OnNavigationAttempt)
+    }
+
+    LaunchedEffect(Unit){
+
+        registerNavigationAttempt{
+            viewModel.onEvent(FocusUiEvent.OnNavigationAttempt)
+        }
+
+        viewModel.uiEffect.collect{ effect ->
+            when(effect){
+                is FocusUiEffect.NavigateBackWithMessage -> {
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("snackbar_message", effect.message)
+
+                    navController.popBackStack()
+                }
+                is FocusUiEffect.ShowSnackbar -> { snackbarHostState.showSnackbar(effect.message) }
+                FocusUiEffect.AllowNavigation -> {
+                    if(isBackNavigation){
+                        isBackNavigation = false
+                        navController.popBackStack()
+                    } else{
+                        onAllowNavigation()
+                    }
+                }
+            }
+        }
+    }
 
     FocusBodyScreen(
         uiState = uiState,
@@ -127,6 +172,7 @@ private fun FocusBodyScreen(
             } else{
                 item {
                     SelectedAppsList(
+                        isCompleted = uiState.isCompleted,
                         apps = uiState.selectedApps,
                         onEvent = onEvent
                     )
@@ -165,7 +211,78 @@ private fun FocusBodyScreen(
                     onDismiss = { onEvent(FocusUiEvent.OnDismissOverlay)}
                 )
             }
+            FocusOverlay.ExitModal -> {
+                ExitBottomSheet(
+                    onConfirmExit = {
+                        onEvent(FocusUiEvent.OnConfirmExit)
+                    },
+                    onDismiss = {
+                        onEvent(FocusUiEvent.OnDismissOverlay)
+                    }
+                )
+            }
             FocusOverlay.None -> Unit
+        }
+    }
+}
+
+@Composable
+private fun ExitBottomSheet(
+    onConfirmExit: () -> Unit,
+    onDismiss: () -> Unit
+){
+
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+    ) {
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp)
+        ) {
+
+            Text(
+                text = "Campos sin Guardar",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "¿Estás seguro de que quieres salir sin guardar?",
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+
+                TextButton(
+                    modifier = Modifier.weight(1f),
+                    onClick = onConfirmExit
+                ) {
+                    Text("Salir")
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Button(
+                    modifier = Modifier.weight(1f),
+                    onClick = onDismiss
+                ) {
+                    Text("Continuar")
+                }
+            }
         }
     }
 }
@@ -268,6 +385,7 @@ private fun EmptyAppsList(){
 
 @Composable
 private fun SelectedAppsList(
+    isCompleted: Boolean,
     apps: List<AppUi>,
     onEvent: (FocusUiEvent) -> Unit
 ){
@@ -335,7 +453,7 @@ private fun SelectedAppsList(
             }
         }
         Button(
-            onClick = { },
+            onClick = { onEvent(FocusUiEvent.Save) },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(54.dp)
@@ -344,7 +462,8 @@ private fun SelectedAppsList(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
             ),
-            shape = RoundedCornerShape(12.dp)
+            shape = RoundedCornerShape(12.dp),
+            enabled = isCompleted
         ) {
             Text(
                 text = "Guardar",
@@ -526,9 +645,7 @@ private fun AppModalPicker(
                 }
                 Spacer(modifier = Modifier.height(20.dp))
                 Button(
-                    onClick = { onEvent(FocusUiEvent.OnAddSelectedApps(
-                        apps.filter { it.isSelected }
-                    )) },
+                    onClick = { onEvent(FocusUiEvent.OnDismissOverlay) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(54.dp)
@@ -537,7 +654,8 @@ private fun AppModalPicker(
                         containerColor = MaterialTheme.colorScheme.secondary,
                         contentColor = MaterialTheme.colorScheme.onSecondary
                     ),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    enabled = apps.any { it.isSelected }
                 ) {
                     Text(
                         text = "Continuar",
