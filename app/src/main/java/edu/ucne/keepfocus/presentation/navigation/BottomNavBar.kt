@@ -102,7 +102,7 @@ private fun getBottomNavItems(): List<BottomNavItem>{
             title = "New Focus Zone",
             selectedIcon = Icons.Filled.Add,
             unselectedIcon = Icons.Outlined.Add,
-            screen = Screen.FocusScreen
+            screen = Screen.FocusScreen()
         ),
         BottomNavItem(
             title = "Settings",
