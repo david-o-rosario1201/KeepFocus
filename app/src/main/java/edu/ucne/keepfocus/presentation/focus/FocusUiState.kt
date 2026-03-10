@@ -8,9 +8,9 @@ data class FocusUiState(
     @DrawableRes val icono: Int = R.drawable.ic_launcher_foreground,
     val tiempoLimite: Long = 0,
     val installedApps: List<AppUi> = emptyList(),
+    val selectedApps: List<AppUi> = emptyList(),
     val overlay: FocusOverlay = FocusOverlay.None
 ){
-    val selectedApps: List<AppUi> get() = installedApps.filter { it.isSelected }
     val isEmpty: Boolean get() = selectedApps.isEmpty()
     val isCompleted: Boolean
         get() = nombre.isNotEmpty() && icono != R.drawable.ic_launcher_foreground
