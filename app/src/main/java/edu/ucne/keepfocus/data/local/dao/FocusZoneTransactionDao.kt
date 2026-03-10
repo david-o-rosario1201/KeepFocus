@@ -2,29 +2,41 @@ package edu.ucne.keepfocus.data.local.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
-import androidx.room.OnConflictStrategy
+import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.Upsert
 import edu.ucne.keepfocus.data.local.entities.AppEntity
 import edu.ucne.keepfocus.data.local.entities.DetalleFocusZoneAppEntity
 import edu.ucne.keepfocus.data.local.entities.FocusZoneEntity
 
 @Dao
 abstract class FocusZoneTransactionDao {
-    @Insert
-    abstract suspend fun insertFocusZone(focusZone: FocusZoneEntity): Long
+    @Upsert
+    abstract suspend fun upsertFocusZone(focusZone: FocusZoneEntity): Long
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Upsert
     abstract suspend fun insertApp(app: AppEntity)
 
     @Insert
     abstract suspend fun insertDetalle(detalle: DetalleFocusZoneAppEntity)
+
+    @Query("DELETE FROM DetalleFocusZoneApp WHERE focusZoneId = :focusZoneId")
+    abstract suspend fun deleteDetallesByFocusId(focusZoneId: Int)
 
     @Transaction
     open suspend fun insertFocusZoneWithApps(
         focusZone: FocusZoneEntity,
         apps: List<AppEntity>
     ){
-        val focusZoneId = insertFocusZone(focusZone).toInt()
+        val result = upsertFocusZone(focusZone)
+
+        val focusZoneId = if (focusZone.focusZoneId == 0) {
+            result.toInt()
+        } else {
+            focusZone.focusZoneId
+        }
+
+        deleteDetallesByFocusId(focusZoneId)
 
         apps.forEach{ app ->
             // 1. Guardar app si no existe
