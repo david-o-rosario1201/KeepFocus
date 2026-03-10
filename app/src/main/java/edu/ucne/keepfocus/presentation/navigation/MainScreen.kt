@@ -32,7 +32,7 @@ fun MainScreen(){
 
                     val currentRoute = navController.currentBackStackEntry?.destination?.route
 
-                    if(currentRoute == Screen.FocusScreen.route){
+                    if(currentRoute?.startsWith(Screen.FocusScreen::class.qualifiedName!!) == true){
                         pendingRoute = route
                         focusNavigationAttempt?.invoke()
                     } else {
