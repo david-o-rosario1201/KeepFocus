@@ -1,28 +1,40 @@
 package edu.ucne.keepfocus.presentation.focus
 
+import android.util.Log
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.core.graphics.drawable.toBitmap
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import edu.ucne.keepfocus.R
+import edu.ucne.keepfocus.data.system.AppIconProvider
+import edu.ucne.keepfocus.domain.models.App
 import edu.ucne.keepfocus.domain.models.FocusZone
-import edu.ucne.keepfocus.domain.system.AppIconProvider
+import edu.ucne.keepfocus.domain.usecases.DeleteFocusZoneUseCase
 import edu.ucne.keepfocus.domain.usecases.GetInstalledAppsUseCase
-import edu.ucne.keepfocus.domain.usecases.UpsertFocusZone
+import edu.ucne.keepfocus.domain.usecases.ObserveFocusZoneByIdUseCase
+import edu.ucne.keepfocus.domain.usecases.ObserveFocusZoneWithAppsUseCase
+import edu.ucne.keepfocus.domain.usecases.ObserveFocusZonesWithAppsUseCase
+import edu.ucne.keepfocus.domain.usecases.UpsertFocusZoneWithApps
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class FocusViewModel @Inject constructor(
+    private val savedStateHandle: SavedStateHandle,
     private val appIconProvider: AppIconProvider,
     private val getInstalledAppsUseCase: GetInstalledAppsUseCase,
-    private val upsertFocusZone: UpsertFocusZone
+    private val upsertFocusZoneWithApps: UpsertFocusZoneWithApps,
+    private val deleteFocusZone: DeleteFocusZoneUseCase,
+    private val observeFocusZoneByIdUseCase: ObserveFocusZoneByIdUseCase,
+    private val observeFocusZoneWithAppsUseCase: ObserveFocusZoneWithAppsUseCase,
+    private val observeFocusZonesWithAppsUseCase: ObserveFocusZonesWithAppsUseCase
 ): ViewModel(){
     private val _uiState = MutableStateFlow(FocusUiState())
     val uiState = _uiState.asStateFlow()
@@ -30,19 +42,19 @@ class FocusViewModel @Inject constructor(
     private val _uiEffect = MutableSharedFlow<FocusUiEffect>()
     val uiEffect = _uiEffect.asSharedFlow()
 
+    private val focusId: Int = savedStateHandle["focusId"] ?: 0
+
     init {
         getInstalledApps()
+        onEvent(FocusUiEvent.OnSelectedFocus(focusId))
+        removeSelectedAppsFromInstalledApps()
     }
 
     private fun getInstalledApps(){
         viewModelScope.launch {
             val installedApps = getInstalledAppsUseCase()
             val apps = installedApps.map { app ->
-                val drawable = getIcon(app.packageName)
-                val imageBitmap = drawable
-                    ?.toBitmap()
-                    ?.asImageBitmap()
-
+                val imageBitmap = appIconProvider.getIcon(app.packageName)
                 AppUi(
                     packageName = app.packageName,
                     name = app.name,
@@ -57,7 +69,25 @@ class FocusViewModel @Inject constructor(
         }
     }
 
-    private fun getIcon(packageName: String) = appIconProvider.getIcon(packageName)
+    private fun removeSelectedAppsFromInstalledApps(){
+        viewModelScope.launch {
+            observeFocusZonesWithAppsUseCase().collect{ focusZoneWithApps ->
+                val usedPackages = focusZoneWithApps
+                    .filter { it.focusZone.focusZoneId != focusId }
+                    .flatMap { it.apps }
+                    .map { it.packageName }
+                    .toSet()
+
+                val filteredApps = _uiState.value.installedApps.filter { app ->
+                    app.packageName !in usedPackages
+                }
+
+                _uiState.update {
+                    it.copy(installedApps = filteredApps)
+                }
+            }
+        }
+    }
 
     private fun sendEffect(effect: FocusUiEffect){
         viewModelScope.launch {
@@ -75,16 +105,32 @@ class FocusViewModel @Inject constructor(
             FocusUiEvent.Save -> {
                 viewModelScope.launch {
                     val state = _uiState.value
+
                     val focusZone = FocusZone(
+                        focusZoneId = focusId,
                         nombre = state.nombre,
                         icono = state.icono,
-                        tiempoLimite = state.tiempoLimite,
+                        tiempoLimite = state.tiempoLimite
                     )
-                    try {
-                        upsertFocusZone(focusZone)
+
+                    val apps = state.selectedApps.map {
+                        App(
+                            packageName = it.packageName,
+                            name = it.name,
+                            isBlocked = false,
+                            dailyLimitMinutes = 0,
+                        )
+                    }
+
+                    try{
+                        upsertFocusZoneWithApps(
+                            focusZone = focusZone,
+                            apps = apps
+                        )
                         sendEffect(FocusUiEffect.NavigateBackWithMessage("Focus guardado con éxito"))
                     } catch (e: Exception){
-                        _uiEffect.emit(FocusUiEffect.ShowSnackbar("Error al guardar el Focus Zone"))
+                        Log.e("FocusSave", "Error saving focus", e)
+                        sendEffect(FocusUiEffect.ShowSnackbar("Error al guardar el Focus Zone"))
                     }
                 }
             }
@@ -112,7 +158,7 @@ class FocusViewModel @Inject constructor(
                     it.copy(overlay = event.overlay)
                 }
             }
-            is FocusUiEvent.OnSelectedApp -> {
+            is FocusUiEvent.ToggleAppSelection -> {
                 _uiState.update { state ->
                     val updatedApps = state.installedApps.map { app ->
                         if(app.packageName == event.packageName){
@@ -121,19 +167,13 @@ class FocusViewModel @Inject constructor(
                             app
                         }
                     }
-                    state.copy(installedApps = updatedApps)
-                }
-            }
-            is FocusUiEvent.OnDeleteSelectedApp -> {
-                _uiState.update { state ->
-                    val apps = state.installedApps.map { app ->
-                        if(app.packageName == event.packageName){
-                            app.copy(isSelected = false)
-                        } else {
-                            app
-                        }
-                    }
-                    state.copy(installedApps = apps)
+
+                    val selectedApps = updatedApps.filter { it.isSelected }
+
+                    state.copy(
+                        installedApps = updatedApps,
+                        selectedApps = selectedApps
+                    )
                 }
             }
             is FocusUiEvent.OnNombreChange -> {
@@ -149,6 +189,52 @@ class FocusViewModel @Inject constructor(
             is FocusUiEvent.OnIconoChange -> {
                 _uiState.update {
                     it.copy(icono = event.icono)
+                }
+            }
+            is FocusUiEvent.OnDeleteFocus -> {
+                viewModelScope.launch {
+                    val focusZone = observeFocusZoneByIdUseCase(event.focusId).first()
+
+                    if(focusZone != null){
+                        deleteFocusZone(focusZone)
+                    } else{
+                        _uiEffect.emit(FocusUiEffect.ShowSnackbar("No se encontró el Focus"))
+                    }
+                }
+            }
+            is FocusUiEvent.OnSelectedFocus -> {
+                viewModelScope.launch {
+                    val focusZoneWithApps = observeFocusZoneWithAppsUseCase(event.focusId).first()
+
+                    val apps = focusZoneWithApps?.apps?.map { app ->
+                        val imageBitmap = appIconProvider.getIcon(app.packageName)
+                        AppUi(
+                            packageName = app.packageName,
+                            name = app.name,
+                            isSelected = true,
+                            icon = imageBitmap
+                        )
+                    }
+
+                    val updatedInstalledApps = _uiState.value.installedApps.map { app ->
+                        if(apps?.any {
+                                it.packageName == app.packageName && it.isSelected
+                            } == true){
+                            app.copy(isSelected = true)
+                        } else{
+                            app.copy(isSelected = false)
+                        }
+                    }
+
+                    _uiState.update {
+                        it.copy(
+                            nombre = focusZoneWithApps?.focusZone?.nombre ?: "",
+                            icono = focusZoneWithApps?.focusZone?.icono ?: R.drawable.ic_launcher_foreground,
+                            tiempoLimite = focusZoneWithApps?.focusZone?.tiempoLimite ?: 0L,
+                            selectedApps = apps ?: emptyList(),
+                            installedApps = updatedInstalledApps
+                        )
+                    }
                 }
             }
         }
