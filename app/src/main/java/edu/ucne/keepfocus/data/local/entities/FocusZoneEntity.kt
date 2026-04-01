@@ -9,5 +9,6 @@ data class FocusZoneEntity(
     val focusZoneId: Int = 0,
     val nombre: String,
     val icono: Int,
-    val tiempoLimite: Long
+    val tiempoLimite: Long,
+    val progreso: Long = 0L
 )
