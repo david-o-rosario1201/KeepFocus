@@ -245,5 +245,6 @@ data class AppUi(
     val packageName: String,
     val name: String,
     val icon: ImageBitmap?,
+    val timeSpent: Long = 0,
     val isSelected: Boolean = false
 )
