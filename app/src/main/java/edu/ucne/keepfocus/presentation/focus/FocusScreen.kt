@@ -143,7 +143,12 @@ private fun FocusBodyScreen(
             "FocusZone: ${uiState.nombre}" else "Registrar un Nuevo Focus"
 
     Scaffold(
-        topBar = { TopAppBarComponent(title = title, subtitle = "") },
+        topBar = {
+            TopAppBarComponent(
+                title = title,
+                subtitle = if(title.isNotEmpty()) "Llena los campos para crear un focus" else ""
+            )
+        },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ){ innerPadding ->
         LazyColumn(
