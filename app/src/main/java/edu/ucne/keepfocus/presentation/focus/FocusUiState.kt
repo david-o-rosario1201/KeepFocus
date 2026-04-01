@@ -18,4 +18,13 @@ data class FocusUiState(
     val hasUnSavedChanges
         get() = nombre.isNotEmpty() || icono != R.drawable.ic_launcher_foreground
                 || tiempoLimite != 0L || selectedApps.isNotEmpty()
+    val timeSpent: Long get() = selectedApps.sumOf { it.timeSpent }
+    val percent: Long
+        get() = if(tiempoLimite > 0){
+            ((timeSpent.toFloat() / tiempoLimite.toFloat()) * 100).toLong()
+        } else 0L
+    val progress: Float
+        get () = if(tiempoLimite > 0){
+            ((timeSpent.toFloat() / tiempoLimite.toFloat()))
+        } else 0f
 }
