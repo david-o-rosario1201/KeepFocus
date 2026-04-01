@@ -63,6 +63,11 @@ class HomeViewModel @Inject constructor(
                     _uiEffect.emit(HomeUiEffect.NavigateToEdit(event.focusId))
                 }
             }
+            is HomeUiEvent.OnViewFocusDetails -> {
+                viewModelScope.launch {
+                    _uiEffect.emit(HomeUiEffect.NavigateToDetails(event.focusId))
+                }
+            }
         }
     }
 }
