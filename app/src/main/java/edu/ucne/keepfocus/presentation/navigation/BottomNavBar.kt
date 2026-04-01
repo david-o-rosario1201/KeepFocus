@@ -44,7 +44,7 @@ fun BottomNavBar(
             .clip(RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp))
     ){
         items.forEach { item ->
-            val isSelected = currentDestination == item.screen.route
+            val isSelected = currentDestination?.startsWith(item.screen.route) == true
 
             NavigationBarItem(
                 selected = isSelected,
