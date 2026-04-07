@@ -1,4 +1,6 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class,
+    ExperimentalMaterial3Api::class
+)
 
 package edu.ucne.keepfocus.presentation.focus
 
@@ -47,6 +49,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -94,11 +97,6 @@ fun FocusScreen(
     }
 
     LaunchedEffect(Unit){
-
-        registerNavigationAttempt{
-            viewModel.onEvent(FocusUiEvent.OnNavigationAttempt)
-        }
-
         viewModel.uiEffect.collect{ effect ->
             when(effect){
                 is FocusUiEffect.NavigateBackWithMessage -> {
@@ -121,21 +119,37 @@ fun FocusScreen(
         }
     }
 
+    LaunchedEffect(Unit){
+        registerNavigationAttempt{
+            viewModel.onEvent(FocusUiEvent.OnNavigationAttempt)
+        }
+    }
+
     FocusBodyScreen(
         uiState = uiState,
-        onEvent = viewModel::onEvent
+        onEvent = viewModel::onEvent,
+        snackbarHostState = snackbarHostState
     )
 }
 
 @Composable
 private fun FocusBodyScreen(
     uiState: FocusUiState,
-    onEvent: (FocusUiEvent) -> Unit
+    onEvent: (FocusUiEvent) -> Unit,
+    snackbarHostState: SnackbarHostState
 ){
     val apps = uiState.installedApps
+    val title = if(uiState.nombre.isNotEmpty())
+            "FocusZone: ${uiState.nombre}" else "Registrar un Nuevo Focus"
 
     Scaffold(
-        topBar = { TopAppBarComponent(title = "Registrar un Nuevo Focus", subtitle = "") }
+        topBar = {
+            TopAppBarComponent(
+                title = title,
+                subtitle = if(title.isNotEmpty()) "Llena los campos para crear un focus" else ""
+            )
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ){ innerPadding ->
         LazyColumn(
             modifier = Modifier
@@ -211,7 +225,7 @@ private fun FocusBodyScreen(
                     onDismiss = { onEvent(FocusUiEvent.OnDismissOverlay)}
                 )
             }
-            FocusOverlay.ExitModal -> {
+            FocusOverlay.Exit -> {
                 ExitBottomSheet(
                     onConfirmExit = {
                         onEvent(FocusUiEvent.OnConfirmExit)
@@ -245,20 +259,22 @@ private fun ExitBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(24.dp)
+                .padding(horizontal = 24.dp, vertical = 10.dp)
         ) {
 
             Text(
                 text = "Campos sin Guardar",
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
                 text = "¿Estás seguro de que quieres salir sin guardar?",
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -440,7 +456,7 @@ private fun SelectedAppsList(
                             modifier = Modifier.weight(1f)
                         )
                         IconButton(
-                            onClick = { onEvent(FocusUiEvent.OnDeleteSelectedApp(app.packageName))}
+                            onClick = { onEvent(FocusUiEvent.ToggleAppSelection(app.packageName))}
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
@@ -639,7 +655,7 @@ private fun AppModalPicker(
                         OptionItem(
                             app = app,
                             selected = app.isSelected,
-                            onSelected = { onEvent(FocusUiEvent.OnSelectedApp(app.packageName)) }
+                            onSelected = { onEvent(FocusUiEvent.ToggleAppSelection(app.packageName)) }
                         )
                     }
                 }

@@ -5,6 +5,7 @@ import androidx.room.RoomDatabase
 import edu.ucne.keepfocus.data.local.dao.AppDao
 import edu.ucne.keepfocus.data.local.dao.DetalleFocusZoneAppDao
 import edu.ucne.keepfocus.data.local.dao.FocusZoneDao
+import edu.ucne.keepfocus.data.local.dao.FocusZoneTransactionDao
 import edu.ucne.keepfocus.data.local.entities.AppEntity
 import edu.ucne.keepfocus.data.local.entities.DetalleFocusZoneAppEntity
 import edu.ucne.keepfocus.data.local.entities.FocusZoneEntity
@@ -22,4 +23,5 @@ abstract class KeepFocusDatabase: RoomDatabase() {
     abstract fun appDao(): AppDao
     abstract fun focusZoneDao(): FocusZoneDao
     abstract fun detalleFocusZoneAppDao(): DetalleFocusZoneAppDao
+    abstract fun focusZoneTransactionDao(): FocusZoneTransactionDao
 }

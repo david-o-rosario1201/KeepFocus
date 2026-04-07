@@ -44,7 +44,7 @@ fun BottomNavBar(
             .clip(RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp))
     ){
         items.forEach { item ->
-            val isSelected = currentDestination == item.screen.route
+            val isSelected = currentDestination?.startsWith(item.screen.route) == true
 
             NavigationBarItem(
                 selected = isSelected,
@@ -102,7 +102,7 @@ private fun getBottomNavItems(): List<BottomNavItem>{
             title = "New Focus Zone",
             selectedIcon = Icons.Filled.Add,
             unselectedIcon = Icons.Outlined.Add,
-            screen = Screen.FocusScreen
+            screen = Screen.FocusScreen()
         ),
         BottomNavItem(
             title = "Settings",

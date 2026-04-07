@@ -7,12 +7,14 @@ fun FocusZoneEntity.toDomain(): FocusZone = FocusZone(
     focusZoneId = focusZoneId,
     nombre = nombre,
     icono = icono,
-    tiempoLimite = tiempoLimite
+    tiempoLimite = tiempoLimite,
+    progreso = progreso
 )
 
 fun FocusZone.asEntity(): FocusZoneEntity = FocusZoneEntity(
     focusZoneId = focusZoneId,
     nombre = nombre,
     icono = icono,
-    tiempoLimite = tiempoLimite
+    tiempoLimite = tiempoLimite,
+    progreso = progreso
 )

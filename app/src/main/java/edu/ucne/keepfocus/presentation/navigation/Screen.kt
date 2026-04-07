@@ -10,7 +10,10 @@ sealed class Screen {
     data object HomeScreen: Screen()
 
     @Serializable
-    data object FocusScreen: Screen()
+    data class FocusScreen(val focusId: Int = 0): Screen()
+
+    @Serializable
+    data class FocusDetailScreen(val focusId: Int = 0): Screen()
 
     @Serializable
     data object SettingScreen: Screen()

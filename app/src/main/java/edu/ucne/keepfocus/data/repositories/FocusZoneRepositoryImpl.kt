@@ -1,8 +1,10 @@
 package edu.ucne.keepfocus.data.repositories
 
 import edu.ucne.keepfocus.data.local.dao.FocusZoneDao
+import edu.ucne.keepfocus.data.local.dao.FocusZoneTransactionDao
 import edu.ucne.keepfocus.data.mappers.asEntity
 import edu.ucne.keepfocus.data.mappers.toDomain
+import edu.ucne.keepfocus.domain.models.App
 import edu.ucne.keepfocus.domain.models.FocusZone
 import edu.ucne.keepfocus.domain.models.FocusZoneWithApps
 import edu.ucne.keepfocus.domain.repositories.FocusZoneRepository
@@ -11,7 +13,8 @@ import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class FocusZoneRepositoryImpl @Inject constructor(
-    private val focusZoneDao: FocusZoneDao
+    private val focusZoneDao: FocusZoneDao,
+    private val transactionDao: FocusZoneTransactionDao
 ): FocusZoneRepository {
     override suspend fun upsertFocusZone(focusZone: FocusZone) {
         return focusZoneDao.upsertFocusZone(focusZone.asEntity())
@@ -41,5 +44,12 @@ class FocusZoneRepositoryImpl @Inject constructor(
     override fun observeFocusZonesWithApps(): Flow<List<FocusZoneWithApps>> {
         return focusZoneDao.observeFocusZonesWithApps()
             .map { list -> list.map { it.toDomain() } }
+    }
+
+    override suspend fun createFocusZone(focusZone: FocusZone, apps: List<App>) {
+        return transactionDao.insertFocusZoneWithApps(
+            focusZone = focusZone.asEntity(),
+            apps = apps.map { it.asEntity() }
+        )
     }
 }
