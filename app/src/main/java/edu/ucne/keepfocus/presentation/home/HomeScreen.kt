@@ -59,6 +59,8 @@ import edu.ucne.keepfocus.R
 import edu.ucne.keepfocus.domain.models.FocusZone
 import edu.ucne.keepfocus.domain.models.FocusZoneWithApps
 import edu.ucne.keepfocus.presentation.component.TopAppBarComponent
+import edu.ucne.keepfocus.presentation.component.getColorByProgressBarPercent
+import edu.ucne.keepfocus.presentation.component.getTimeUnit
 import edu.ucne.keepfocus.presentation.focus.AppUi
 import edu.ucne.keepfocus.presentation.navigation.Screen
 
@@ -94,10 +96,13 @@ fun HomeScreen(
                 is HomeUiEffect.NavigateToEdit -> {
                     navController.navigate(Screen.FocusScreen(effect.focusId))
                 }
+
+                is HomeUiEffect.NavigateToDetails -> {
+                    navController.navigate(Screen.FocusDetailScreen(effect.focusId))
+                }
             }
         }
     }
-
 
     HomeBodyScreen(
         uiState = uiState,
@@ -115,7 +120,7 @@ private fun HomeBodyScreen(
     snackbarHostState: SnackbarHostState
 ){
     Scaffold(
-        topBar = { TopAppBarComponent() },
+        topBar = { TopAppBarComponent(subtitle = "Controla tu tiempo en pantalla.") },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ){ innerPadding ->
         Column(
@@ -209,7 +214,7 @@ private fun FocusZoneExpandableCard(
                 Row(
                     modifier = Modifier
                         .weight(1f)
-                        .clickable { expanded = !expanded },
+                        .clickable { onEvent(HomeUiEvent.OnViewFocusDetails(focusZone.focusZoneId)) },
                     verticalAlignment = Alignment.CenterVertically
                 ){
                     Image(
@@ -242,7 +247,8 @@ private fun FocusZoneExpandableCard(
                     else
                         Icons.Default.KeyboardArrowDown,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimary
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.clickable { expanded = !expanded }
                 )
 
                 // 🔹 MENÚ (solo cuando está colapsado)
@@ -307,10 +313,10 @@ private fun AppCardInside(app: AppUi){
                 progress = { 0.90f },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(8.dp)
+                    .height(10.dp)
                     .clip(RoundedCornerShape(50)),
-                color = Color(0xFF2FA69A), // verde progreso
-                trackColor = Color(0xFFE6E0F0) // gris/morado claro
+                color = getColorByProgressBarPercent(app.timeSpent), // verde progreso
+                trackColor = Color.LightGray.copy(alpha = 0.5f)
             )
         }
         Spacer(modifier = Modifier.width(8.dp))
@@ -357,24 +363,5 @@ private fun MoreMenu(
                 }
             )
         }
-    }
-}
-
-private fun getTimeUnit(value: Int): String{
-    return when(value){
-        1 -> "1 Minuto"
-        2 -> "2 Minutos"
-        3 -> "3 Minutos"
-        4 -> "4 Minutos"
-        5 -> "5 Minutos"
-        10 -> "10 Minutos"
-        15 -> "15 Minutos"
-        20 -> "20 Minutos"
-        30 -> "30 Minutos"
-        45 -> "45 Minutos"
-        60 -> "1 Hora"
-        120 -> "2 Horas"
-        180 -> "3 Horas"
-        else -> "N/A"
     }
 }
